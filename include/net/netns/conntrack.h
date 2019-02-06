@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __NETNS_CONNTRACK_H
 #define __NETNS_CONNTRACK_H
 
@@ -69,19 +70,6 @@ struct nf_sctp_net {
 };
 #endif
 
-#ifdef CONFIG_NF_CT_PROTO_UDPLITE
-enum udplite_conntrack {
-	UDPLITE_CT_UNREPLIED,
-	UDPLITE_CT_REPLIED,
-	UDPLITE_CT_MAX
-};
-
-struct nf_udplite_net {
-	struct nf_proto_net pn;
-	unsigned int timeouts[UDPLITE_CT_MAX];
-};
-#endif
-
 struct nf_ip_net {
 	struct nf_generic_net   generic;
 	struct nf_tcp_net	tcp;
@@ -93,9 +81,6 @@ struct nf_ip_net {
 #endif
 #ifdef CONFIG_NF_CT_PROTO_SCTP
 	struct nf_sctp_net	sctp;
-#endif
-#ifdef CONFIG_NF_CT_PROTO_UDPLITE
-	struct nf_udplite_net	udplite;
 #endif
 };
 
@@ -112,18 +97,14 @@ struct netns_ct {
 	struct delayed_work ecache_dwork;
 	bool ecache_dwork_pending;
 #endif
+	bool			auto_assign_helper_warned;
 #ifdef CONFIG_SYSCTL
 	struct ctl_table_header	*sysctl_header;
-	struct ctl_table_header	*acct_sysctl_header;
-	struct ctl_table_header	*tstamp_sysctl_header;
-	struct ctl_table_header	*event_sysctl_header;
-	struct ctl_table_header	*helper_sysctl_header;
 #endif
 	unsigned int		sysctl_log_invalid; /* Log invalid packets */
 	int			sysctl_events;
 	int			sysctl_acct;
 	int			sysctl_auto_assign_helper;
-	bool			auto_assign_helper_warned;
 	int			sysctl_tstamp;
 	int			sysctl_checksum;
 

@@ -250,15 +250,10 @@ int yama_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 		} else {
 			struct task_struct *tracer;
 
-			rcu_read_lock();
-			tracer = find_task_by_vpid(arg2);
-			if (tracer)
-				get_task_struct(tracer);
-			else
+			tracer = find_get_task_by_vpid(arg2);
+			if (!tracer) {
 				rc = -EINVAL;
-			rcu_read_unlock();
-
-			if (tracer) {
+			} else {
 				rc = yama_ptracer_add(tracer, myself);
 				put_task_struct(tracer);
 			}
@@ -373,7 +368,9 @@ static int yama_ptrace_access_check(struct task_struct *child,
 			break;
 		case YAMA_SCOPE_RELATIONAL:
 			rcu_read_lock();
-			if (!task_is_descendant(current, child) &&
+			if (!pid_alive(child))
+				rc = -EPERM;
+			if (!rc && !task_is_descendant(current, child) &&
 			    !ptracer_exception_found(current, child) &&
 			    !ns_capable(__task_cred(child)->user_ns, CAP_SYS_PTRACE))
 				rc = -EPERM;
@@ -428,7 +425,7 @@ int yama_ptrace_traceme(struct task_struct *parent)
 	return rc;
 }
 
-static struct security_hook_list yama_hooks[] = {
+static struct security_hook_list yama_hooks[] __lsm_ro_after_init = {
 	LSM_HOOK_INIT(ptrace_access_check, yama_ptrace_access_check),
 	LSM_HOOK_INIT(ptrace_traceme, yama_ptrace_traceme),
 	LSM_HOOK_INIT(task_prctl, yama_task_prctl),
@@ -485,6 +482,6 @@ static inline void yama_init_sysctl(void) { }
 void __init yama_add_hooks(void)
 {
 	pr_info("Yama: becoming mindful.\n");
-	security_add_hooks(yama_hooks, ARRAY_SIZE(yama_hooks));
+	security_add_hooks(yama_hooks, ARRAY_SIZE(yama_hooks), "yama");
 	yama_init_sysctl();
 }

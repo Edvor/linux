@@ -149,7 +149,7 @@ static void *__mic_dma_alloc(struct device *dev, size_t size,
 	struct scif_hw_dev *scdev = dev_get_drvdata(dev);
 	struct mic_device *mdev = scdev_to_mdev(scdev);
 	dma_addr_t tmp;
-	void *va = kmalloc(size, gfp);
+	void *va = kmalloc(size, gfp | __GFP_ZERO);
 
 	if (va) {
 		tmp = mic_map_single(mdev, va, size);
@@ -245,7 +245,7 @@ static void __mic_dma_unmap_sg(struct device *dev,
 	dma_unmap_sg(&mdev->pdev->dev, sg, nents, dir);
 }
 
-static struct dma_map_ops __mic_dma_ops = {
+static const struct dma_map_ops __mic_dma_ops = {
 	.alloc = __mic_dma_alloc,
 	.free = __mic_dma_free,
 	.map_page = __mic_dma_map_page,
@@ -344,7 +344,7 @@ mic_dma_unmap_page(struct device *dev, dma_addr_t dma_addr,
 	mic_unmap_single(mdev, dma_addr, size);
 }
 
-static struct dma_map_ops mic_dma_ops = {
+static const struct dma_map_ops mic_dma_ops = {
 	.map_page = mic_dma_map_page,
 	.unmap_page = mic_dma_unmap_page,
 };

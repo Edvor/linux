@@ -80,6 +80,7 @@ __ioremap(phys_addr_t addr, unsigned long size, pgprot_t prot)
 
 	return (void __iomem *)(offset + (char *)v);
 }
+EXPORT_SYMBOL(__ioremap);
 
 void iounmap(void *addr)
 {
@@ -106,6 +107,7 @@ void iounmap(void *addr)
 
 	return vfree((void *)(PAGE_MASK & (unsigned long)addr));
 }
+EXPORT_SYMBOL(iounmap);
 
 /**
  * OK, this one's a bit tricky... ioremap can get called before memory is
@@ -116,15 +118,14 @@ void iounmap(void *addr)
  * the memblock infrastructure.
  */
 
-pte_t __ref *pte_alloc_one_kernel(struct mm_struct *mm,
-					 unsigned long address)
+pte_t __ref *pte_alloc_one_kernel(struct mm_struct *mm)
 {
 	pte_t *pte;
 
 	if (likely(mem_init_done)) {
 		pte = (pte_t *) __get_free_page(GFP_KERNEL);
 	} else {
-		pte = (pte_t *) __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
+		pte = (pte_t *) __va(memblock_phys_alloc(PAGE_SIZE, PAGE_SIZE));
 	}
 
 	if (pte)

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #include <asm/asm-offsets.h>
 #include <asm/thread_info.h>
 
@@ -71,7 +72,7 @@ SECTIONS
 	/* Exception table for data bus errors */
 	__dbe_table : {
 		__start___dbe_table = .;
-		*(__dbe_table)
+		KEEP(*(__dbe_table))
 		__stop___dbe_table = .;
 	}
 
@@ -97,6 +98,7 @@ SECTIONS
 		DATA_DATA
 		CONSTRUCTORS
 	}
+	BUG_TABLE
 	_gp = . + 0x8000;
 	.lit8 : {
 		*(.lit8)
@@ -121,7 +123,7 @@ SECTIONS
 	. = ALIGN(4);
 	.mips.machines.init : AT(ADDR(.mips.machines.init) - LOAD_OFFSET) {
 		__mips_machines_start = .;
-		*(.mips.machines.init)
+		KEEP(*(.mips.machines.init))
 		__mips_machines_end = .;
 	}
 
@@ -182,7 +184,7 @@ SECTIONS
 	 * Force .bss to 64K alignment so that .bss..swapper_pg_dir
 	 * gets that alignment.	 .sbss should be empty, so there will be
 	 * no holes after __init_end. */
-	BSS_SECTION(0, 0x10000, 0)
+	BSS_SECTION(0, 0x10000, 8)
 
 	_end = . ;
 
